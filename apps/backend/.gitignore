@@ -1,0 +1,17 @@
+# Node modules
+node_modules/
+.env
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Build artifacts
+dist/
+# Prisma
+/prisma/*.sqlite
+/prisma/migrations/
+# Test reports
+coverage/
+.nyc_output/
+/src/generated/prisma

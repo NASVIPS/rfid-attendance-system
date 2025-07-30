@@ -1,0 +1,285 @@
+/* rfid-attendance-system/apps/frontend/src/pages/attendanceReportsPage.css */
+
+/* Reusing styles from pCoordinatorDashboard.css for consistency */
+.pcoord-sub-page-container {
+    padding: 0;
+    max-width: 100vw;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background-color: #eef2f6; /* Lighter background for sub-pages */
+    color: #333; /* Default text color */
+}
+
+.pcoord-sub-page-main-content {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: calc(var(--total-header-height) + 1.5rem); /* Space for fixed header + top padding */
+    box-sizing: border-box;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.back-button { /* Reusing back-button style */
+    padding: 0.6rem 1.2rem;
+    background-color: #607d8b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 3rem;
+}
+.back-button:hover {
+    background-color: #455a64;
+    transform: translateY(-2px);
+}
+.back-button:active {
+    transform: translateY(0);
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212121;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Filter Card */
+.filter-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E0E0E0;
+}
+
+.filter-heading {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.8rem;
+    text-align: center;
+}
+
+.report-filter-form {
+    display: grid; /* Use grid for better control */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem; /* Space between form groups */
+    align-items: flex-end; /* Align buttons/inputs at the bottom */
+    justify-content: center;
+}
+
+.report-filter-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.report-filter-form label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 0.5rem;
+}
+
+.report-filter-form select,
+.report-filter-form input[type="date"] {
+    padding: 0.75rem 1rem;
+    border: 1px solid #C5C5C5;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #F8F9FA;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.report-filter-form select:focus,
+.report-filter-form input[type="date"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.generate-report-button {
+    padding: 0.8rem 1.8rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    width: auto; /* Allow button to size naturally */
+    margin-top: auto; /* Push to bottom of its grid cell */
+}
+
+.generate-report-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.generate-report-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Report Results Card */
+.report-results-card {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E5E7EB;
+}
+
+.report-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.report-summary p {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.report-summary .font-bold {
+  font-weight: 700;
+  color: #111;
+}
+
+.download-excel-button {
+    padding: 0.7rem 1.5rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+.download-excel-button:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+
+.no-records-message {
+  font-size: 1.1rem;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+/* Report Table Styling (reusing management-table styles) */
+.report-table-container {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px; /* Ensure horizontal scroll on small screens */
+}
+
+.report-table thead th {
+  background-color: #F0F4F8;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #444;
+  text-transform: uppercase;
+  border-bottom: 2px solid #D0D4D8;
+}
+
+.report-table tbody td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #333;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.report-table tbody tr:nth-child(even) {
+  background-color: #FFFFFF;
+}
+.report-table tbody tr:nth-child(odd) {
+    background-color: #FBFBFB;
+}
+.report-table tbody tr:hover {
+  background-color: #E8F0F8;
+}
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.attendance-percentage {
+  font-weight: bold;
+}
+.attendance-percentage.text-green-600 { color: #28a745; }
+.attendance-percentage.text-red-600 { color: #dc3545; }
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .pcoord-sub-page-main-content {
+    padding: 1rem;
+    padding-top: calc(var(--total-header-height) + 1rem);
+  }
+  .page-title {
+    font-size: 1.8rem;
+  }
+  .report-filter-form {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .report-filter-form .form-group {
+    min-width: unset;
+  }
+  .report-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .report-table {
+    min-width: unset;
+  }
+  .back-button {
+    margin-bottom: 1rem;
+  }
+}

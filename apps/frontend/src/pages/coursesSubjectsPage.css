@@ -1,0 +1,16 @@
+/* rfid-attendance-system/apps/frontend/src/pages/coursesSubjectsPage.css */
+/* ... (existing styles for pcoord-sub-page-container, pcoord-sub-page-main-content, back-button, sub-navigation-tabs, management-section-card, section-title, etc.) ... */
+
+/* Subject Management Specific Styles (reusing common management-section-card styles) */
+/* Form styling will reuse grid, form-group, label, input, select styles */
+/* Table styling will reuse management-section-card-table-container, management-table, management-table-th, management-table-td, table-action-button styles */
+
+/* No new specific classes needed if reusing existing management-section-card and table styles effectively */
+
+/* You might want to add specific overrides if the Subject form/table needs unique spacing/colors */
+/* Example: If subject-specific buttons or fields need different colors */
+
+/* Responsive adjustments for subject management if needed */
+@media (max-width: 768px) {
+    /* Similar adjustments as faculty management */
+}

@@ -1,0 +1,238 @@
+/* rfid-attendance-system/apps/frontend/src/pages/attendanceBoard.css */
+
+/* Overall container for the Attendance Board */
+.attendance-board-page-container {
+  padding: 0; /* No padding here. Handled by inner container. */
+  max-width: 100vw;
+  margin: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: #f7f9fc; /* Light background for the page */
+}
+
+/* Main Content Wrapper (pushes content below fixed header) */
+.attendance-board-main-content {
+  padding: 1.5rem; /* Existing padding for content */
+  max-width: 1200px; /* Max width for content */
+  margin: 0 auto; /* Center content */
+  padding-top: 3rem; /* CRITICAL: Adds space for fixed header + desired top padding */
+  box-sizing: border-box;
+  flex-grow: 1; /* Allow content to fill remaining space below header */
+  width: 100%; /* Ensure it spans full width for centering */
+}
+
+/* Actions Row (for Back and Download buttons) */
+.actions-row {
+  display: flex;
+  justify-content: space-between; /* Space out buttons */
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-top: 0.5rem; /* Small padding from the very top of content area */
+}
+
+/* Back Button Style */
+.back-button {
+  padding: 0.6rem 1.2rem;
+  background-color: #6c757d; /* Grey */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
+/* Download Excel Button Style */
+.download-excel-button {
+  padding: 0.6rem 1.2rem;
+  background-color: #28a745; /* Green for download */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.download-excel-button:hover {
+  background-color: #218838;
+}
+/* rfid-attendance-system/apps/frontend/src/pages/attendanceBoard.css */
+/* ... (existing styles) ... */
+
+/* Close Session Button Style */
+.close-session-button {
+  padding: 0.6rem 1.2rem;
+  background-color: #EF5350; /* Light red/orange */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-left: 1rem; /* Space from other buttons */
+}
+
+.close-session-button:hover {
+  background-color: #D32F2F; /* Darker red */
+}
+
+/* Responsive Adjustments (ensure buttons stack if needed) */
+@media (max-width: 768px) {
+  .actions-row {
+    flex-direction: column; /* Stack buttons vertically on small screens */
+    align-items: stretch; /* Stretch buttons to full width */
+    gap: 0.8rem; /* Space between stacked buttons */
+  }
+  .back-button,
+  .download-excel-button,
+  .close-session-button { /* Apply full width to all buttons when stacked */
+    width: 100%;
+    margin-left: 0 !important; /* Override margin-left from other rules */
+  }
+}
+
+/* Session Info Card */
+.session-info-card {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E0E0E0;
+}
+
+.session-info-card p {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.session-info-card p.title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #111;
+}
+
+.session-info-card .status-text {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.session-info-card .status-connected {
+  color: #28A745;
+}
+
+.session-info-card .status-disconnected,
+.session-info-card .status-error {
+  color: #DC3545;
+}
+
+/* Student List Section */
+.students-present-heading {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.no-scans-message {
+  font-size: 1.1rem;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+/* Attendance Table (Improved Styling & Responsiveness) */
+.attendance-table-container {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.attendance-table thead th {
+  background-color: #F8F8F8;
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  border-bottom: 2px solid #E0E0E0;
+}
+
+.attendance-table tbody td {
+  padding: 1rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #333;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.attendance-table tbody tr:nth-child(even) {
+  background-color: #FAFAFA;
+}
+
+.attendance-table tbody tr:hover {
+  background-color: #F0F0F0;
+}
+
+.attendance-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.attendance-table .student-name {
+  font-weight: 600;
+}
+
+.attendance-table .enrollment-no {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.attendance-table .timestamp {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Responsive Adjustments for Attendance Board */
+@media (max-width: 768px) {
+  .attendance-board-main-content {
+    padding: 1rem;
+    padding-top: 3rem;
+  }
+  .back-button { /* Adjust positioning if needed on mobile */
+    align-self: flex-start;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+  .students-present-heading {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+  .session-info-card {
+    padding: 1rem;
+  }
+  .attendance-table {
+    min-width: unset;
+  }
+}

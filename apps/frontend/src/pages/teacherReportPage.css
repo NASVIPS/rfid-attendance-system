@@ -1,0 +1,299 @@
+/* rfid-attendance-system/apps/frontend/src/pages/teacherReportPage.css */
+
+/* Overall container for the Teacher Report Page */
+.teacher-report-page-container {
+  padding: 0;
+  max-width: 100vw;
+  margin: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: #eef2f6; /* Lighter, modern background */
+  color: #333; /* Default text color */
+}
+
+/* Main Content Wrapper (pushes content below fixed header) */
+.report-main-content {
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-top: 3rem; /* Space for fixed header + desired top padding */
+  box-sizing: border-box;
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* Page Back Button (consistent style) */
+.back-to-dashboard-button {
+  display: inline-flex; /* To align icon and text */
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #607d8b; /* Blue-grey */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.back-to-dashboard-button:hover {
+  background-color: #455a64;
+  transform: translateY(-2px);
+}
+.back-to-dashboard-button:active {
+  transform: translateY(0);
+}
+/* Icon for back button (optional, but good UX) */
+.back-button-icon {
+    margin-right: 0.5rem;
+}
+
+
+/* Report Title & Class Info */
+.report-page-title {
+  font-size: 2.5rem; /* Slightly larger */
+  font-weight: 700;
+  color: #212121; /* Darker */
+  margin-bottom: 0.5rem;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+.report-class-info {
+  font-size: 1.2rem; /* Slightly larger */
+  color: #555;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.report-class-info .font-semibold {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Filter Card */
+.filter-card {
+  background-color: #FFFFFF;
+  border-radius: 15px; /* More rounded */
+  padding: 2rem; /* More padding */
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+  border: 1px solid #E5E7EB; /* Lighter border */
+}
+
+.filter-heading {
+  font-size: 1.8rem; /* Slightly larger */
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.8rem; /* More space */
+  text-align: center;
+}
+
+.report-filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem; /* More space between form groups */
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.report-filter-form .form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 200px; /* Slightly increased min-width */
+}
+
+.report-filter-form label {
+  font-size: 0.95rem; /* Slightly larger */
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0.5rem; /* More space */
+}
+
+.report-filter-form input[type="date"] {
+  padding: 0.75rem; /* More padding */
+  border: 1px solid #C5C5C5; /* Softer border */
+  border-radius: 8px; /* More rounded */
+  font-size: 1rem;
+  background-color: #F8F9FA; /* Off-white background */
+  width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06); /* Subtle inner shadow */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.report-filter-form input[type="date"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.generate-report-button {
+  padding: 0.8rem 1.8rem; /* Larger button */
+  background-color: #007bff; /* Primary blue */
+  color: white;
+  border: none;
+  border-radius: 8px; /* More rounded */
+  font-size: 1.1rem; /* Larger font */
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.generate-report-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.generate-report-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Report Results Card */
+.report-results-card {
+  background-color: #FFFFFF;
+  border-radius: 15px; /* More rounded */
+  padding: 2rem; /* More padding */
+  margin-top: 2.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+  border: 1px solid #E5E7EB; /* Lighter border */
+}
+
+.report-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.report-summary p {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.report-summary .font-bold {
+  font-weight: 700;
+  color: #111;
+}
+
+.download-excel-button { /* Consistent with generate button */
+    padding: 0.7rem 1.5rem;
+    background-color: #28a745; /* Green for download */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+.download-excel-button:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+
+.no-records-message {
+  font-size: 1.1rem;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+/* Report Table Styling */
+.report-table-container {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px; /* Ensure horizontal scroll on small screens */
+}
+
+.report-table thead th {
+  background-color: #F0F4F8; /* Lighter header background */
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.95rem; /* Slightly larger */
+  font-weight: 600;
+  color: #444;
+  text-transform: uppercase;
+  border-bottom: 2px solid #D0D4D8; /* Clearer separator */
+}
+
+.report-table tbody td {
+  padding: 1rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #333;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.report-table tbody tr:nth-child(even) {
+  background-color: #FBFBFB; /* Very subtle stripe */
+}
+
+.report-table tbody tr:hover {
+  background-color: #E8F0F8; /* Clearer hover effect */
+}
+
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.attendance-percentage {
+  font-weight: bold;
+}
+.attendance-percentage.text-green-600 { color: #28a745; } /* Ensure strong green */
+.attendance-percentage.text-red-600 { color: #dc3545; } /* Ensure strong red */
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .report-main-content {
+    padding: 1rem;
+    padding-top: calc(var(--total-header-height) + 1rem);
+  }
+  .report-page-title {
+    font-size: 1.8rem;
+  }
+  .report-filter-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .report-filter-form .form-group {
+    min-width: unset;
+  }
+  .report-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .report-table {
+    min-width: unset;
+  }
+  .back-to-dashboard-button {
+    margin-bottom: 1rem;
+  }
+}

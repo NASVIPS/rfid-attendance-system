@@ -1,0 +1,211 @@
+// schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Department {
+  id      Int      @id @default(autoincrement())
+  code    String   @unique
+  name    String
+  courses Course[]
+}
+
+model Course {
+  id            Int        @id @default(autoincrement())
+  department    Department @relation(fields: [departmentId], references: [id])
+  departmentId  Int
+  name          String
+  durationYears Int
+  degreeType    String // UG / PG
+  semesters     Semester[]
+}
+
+// NEW CODE (Add academicYear field)
+model Semester {
+  id              Int               @id @default(autoincrement())
+  course          Course            @relation(fields: [courseId], references: [id])
+  courseId        Int
+  number          Int
+  type            String // odd / even
+  academicYear    Int               @default(2024) // ADD @default(2024) here
+  sections        Section[]
+  SemesterSubject SemesterSubject[]
+
+  @@unique([courseId, number, academicYear]) // Keep this unique constraint
+}
+
+model Section {
+  id               Int               @id @default(autoincrement())
+  name             String
+  semester         Semester          @relation(fields: [semesterId], references: [id])
+  semesterId       Int
+  students         Student[]
+  instances        SubjectInstance[]
+  scheduledClasses ScheduledClass[]
+}
+
+model Subject {
+  id               Int               @id @default(autoincrement())
+  code             String            @unique
+  name             String
+  credits          Int?
+  instances        SubjectInstance[]
+  scheduledClasses ScheduledClass[]
+  SemesterSubject  SemesterSubject[]
+}
+
+model SubjectInstance {
+  id             Int              @id @default(autoincrement())
+  subject        Subject          @relation(fields: [subjectId], references: [id])
+  subjectId      Int
+  section        Section          @relation(fields: [sectionId], references: [id])
+  sectionId      Int
+  faculty        Faculty          @relation(fields: [facultyId], references: [id], onDelete: Cascade) // MODIFIED: Added onDelete: Cascade
+  facultyId      Int
+  classSessions  ClassSession[]
+  ScheduledClass ScheduledClass[]
+
+  @@unique([subjectId, sectionId, facultyId])
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  passwordHash   String
+  role           String // ADMIN | PCOORD | TEACHER
+  facultyProfile Faculty?
+}
+
+model Faculty {
+  id               Int               @id @default(autoincrement())
+  user             User              @relation(fields: [userId], references: [id])
+  userId           Int               @unique // one-to-one requires UNIQUE here
+  empId            String            @unique
+  name             String
+  phone            String
+  rfidUid          String            @unique // Assuming 12-char RFID UID (UID + Checksum)
+  devices          Device[] // 1-to-many: Faculty → Device
+  subjectInstances SubjectInstance[] // Faculty teaches many subject instances
+  classSessions    ClassSession[] // Faculty appears as teacher in sessions
+  scheduledClasses ScheduledClass[]
+}
+
+model Student {
+  id           Int             @id @default(autoincrement())
+  rfidUid      String          @unique // Assuming 12-char RFID UID (UID + Checksum)
+  enrollmentNo String          @unique
+  name         String
+  phone        String?
+  section      Section         @relation(fields: [sectionId], references: [id])
+  sectionId    Int
+  logs         AttendanceLog[]
+}
+
+model Device {
+  id         Int       @id @default(autoincrement())
+  macAddr    String    @unique @db.VarChar(17) // Ensure this is 'macAddr' and has appropriate length
+  secret     String
+  name       String?
+  location   String?
+  lastBootAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt // FIX: Made nullable to allow migration on existing data
+
+  // NEW: Add optional relation back to Faculty for 'devices' field
+  faculty   Faculty? @relation(fields: [facultyId], references: [id])
+  facultyId Int? // Foreign key for the faculty who might own/be associated with this device
+
+  classSessions ClassSession[]
+  logs          AttendanceLog[] // Device writes many attendance logs
+}
+
+// NEW CODE (add onDelete: Cascade to the teacher relation)
+model ClassSession {
+  id            Int             @id @default(autoincrement())
+  subjectInst   SubjectInstance @relation(fields: [subjectInstId], references: [id])
+  subjectInstId Int
+  teacher       Faculty         @relation(fields: [teacherId], references: [id], onDelete: Cascade) // MODIFIED: Added onDelete: Cascade
+  teacherId     Int
+
+  device   Device? @relation(fields: [deviceId], references: [id])
+  deviceId Int?
+
+  startAt  DateTime
+  endAt    DateTime?
+  isClosed Boolean         @default(false)
+  logs     AttendanceLog[]
+}
+
+model AttendanceLog {
+  id               Int              @id @default(autoincrement())
+  student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade) // MODIFIED: Added onDelete: Cascade
+  studentId        Int
+  session          ClassSession     @relation(fields: [sessionId], references: [id])
+  sessionId        Int
+  status           AttendanceStatus
+  timestamp        DateTime         @default(now()) // Confirmed to be 'timestamp'
+  device           Device           @relation(fields: [deviceId], references: [id])
+  deviceId         Int
+  deviceMacAddress String? // FIX: Made nullable as per comment and error
+  manualOverride   Boolean          @default(false)
+
+  @@unique([studentId, sessionId])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+// NEW CODE (add subjectInst and subjectInstId fields)
+model ScheduledClass {
+  id        Int       @id @default(autoincrement())
+  dayOfWeek DayOfWeek
+
+  startTime String // HH:MM:SS
+  endTime   String
+
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId Int
+  section   Section  @relation(fields: [sectionId], references: [id])
+  sectionId Int
+  faculty   Faculty? @relation(fields: [facultyId], references: [id])
+  facultyId Int?
+
+  // NEW RELATION TO SUBJECTINSTANCE
+  subjectInst   SubjectInstance @relation(fields: [subjectInstId], references: [id])
+  subjectInstId Int // This foreign key links to SubjectInstance
+
+  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime       @updatedAt @db.Timestamptz(3)
+
+  @@unique([dayOfWeek, subjectId, sectionId, startTime, endTime]) // MODIFIED: Added startTime and endTime
+  @@index([subjectInstId]) // Keep this
+}
+
+model SemesterSubject {
+  id         Int      @id @default(autoincrement())
+  semester   Semester @relation(fields: [semesterId], references: [id])
+  semesterId Int
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  subjectId  Int
+  createdAt  DateTime @default(now())
+
+  @@unique([semesterId, subjectId]) // A subject can be offered only once per semester
+}

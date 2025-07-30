@@ -1,0 +1,1 @@
+export function isHexUid(uid) { return /^[0-9A-Fa-f]{12}$/.test(uid); }

@@ -1,0 +1,384 @@
+/* rfid-attendance-system/apps/frontend/src/pages/facultyStudentsPage.css */
+/* Reusing styles from pCoordinatorDashboard.css where applicable */
+.pcoord-sub-page-container {
+    padding: 0;
+    max-width: 100vw;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background-color: #eef2f6; /* Lighter background for sub-pages */
+    color: #333; /* Default text color */
+}
+
+.pcoord-sub-page-main-content {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: calc(var(--total-header-height) + 1.5rem); /* Space for fixed header + top padding */
+    box-sizing: border-box;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.back-button {
+    padding: 0.6rem 1.2rem;
+    background-color: #607d8b; /* Blue-grey */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.back-button:hover {
+    background-color: #455a64;
+    transform: translateY(-2px);
+}
+.back-button:active {
+    transform: translateY(0);
+}
+
+.sub-navigation-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ddd; /* Lighter border */
+    padding-bottom: 0.8rem; /* More padding below tabs */
+    padding-top: 4rem;
+}
+
+.sub-navigation-tabs .nav-tab-button {
+    padding: 0.75rem 1.5rem;
+    background-color: #f0f0f0; /* Lighter default */
+    color: #555;
+    border: none;
+    border-radius: 8px; /* More rounded */
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Subtle shadow */
+}
+
+.sub-navigation-tabs .nav-tab-button.active {
+    background-color: #007bff; /* Primary blue */
+    color: white;
+    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3); /* Stronger shadow for active */
+}
+
+.sub-navigation-tabs .nav-tab-button:hover:not(.active) {
+    background-color: #d8d8d8; /* Slightly darker on hover */
+}
+
+/* Reusable Management Section Card (for forms and tables) */
+.management-section-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E0E0E0;
+    margin-bottom: 2rem;
+}
+.section-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Form Styling Refinements */
+.management-section-card form.grid {
+    gap: 1.5rem; /* More space in form grid */
+}
+.management-section-card label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 0.5rem;
+}
+.management-section-card input[type="text"],
+.management-section-card input[type="email"],
+.management-section-card input[type="password"],
+.management-section-card input[type="number"],
+.management-section-card select {
+    padding: 0.75rem 1rem; /* More padding */
+    border: 1px solid #C5C5C5; /* Softer border */
+    border-radius: 8px; /* More rounded */
+    font-size: 1rem;
+    background-color: #F8F9FA; /* Off-white background */
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06); /* Subtle inner shadow */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.management-section-card input:focus,
+.management-section-card select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Form Buttons */
+.management-section-card button[type="submit"],
+.management-section-card button[type="button"] {
+    padding: 0.8rem 1.8rem; /* Larger buttons */
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+.management-section-card button[type="submit"] {
+    background-color: #4f46e5; /* Indigo */
+    color: white;
+}
+.management-section-card button[type="submit"]:hover {
+    background-color: #4338ca;
+    transform: translateY(-2px);
+}
+.management-section-card button[type="button"] { /* Cancel button */
+    background-color: #6c757d; /* Grey */
+    color: white;
+}
+.management-section-card button[type="button"]:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Table Styling Refinements */
+.management-section-card .overflow-x-auto {
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.management-section-card table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px; /* Ensure horizontal scroll on smaller screens */
+}
+.management-section-card thead th {
+    background-color: #F0F4F8; /* Lighter header background */
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #444;
+    text-transform: uppercase;
+    border-bottom: 2px solid #D0D4D8;
+}
+.management-section-card tbody td {
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.95rem;
+    color: #333;
+    border-bottom: 1px solid #EAEAEA;
+}
+.management-section-card tbody tr:nth-child(even) {
+    background-color: #FBFBFB;
+}
+.management-section-card tbody tr:hover {
+    background-color: #E8F0F8;
+}
+.management-section-card tbody tr:last-child td {
+    border-bottom: none;
+}
+.management-section-card .text-indigo-600 { color: #4f46e5; }
+.management-section-card .hover\:text-indigo-900:hover { color: #3730a3; }
+.management-section-card .text-red-600 { color: #ef4444; }
+.management-section-card .hover\:text-red-900:hover { color: #b91c1c; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pcoord-sub-page-main-content {
+        padding: 1rem;
+        padding-top: calc(var(--total-header-height) + 1rem);
+    }
+    .sub-navigation-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .sub-navigation-tabs .nav-tab-button {
+        width: 100%;
+        text-align: center;
+    }
+    .management-section-card form.grid {
+        grid-template-columns: 1fr;
+    }
+    .management-section-card button[type="submit"],
+    .management-section-card button[type="button"] {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-bottom: 0.5rem;
+    }
+    .management-section-card .space-x-3 {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .management-section-card table {
+        min-width: unset;
+    }
+}
+    .report-table {
+        min-width: unset; /* Allow table to shrink on smaller screens */
+    }
+    .report-table th,
+    .report-table td {
+        font-size: 0.9rem; /* Smaller font size for mobile */
+        padding: 0.6rem; /* Less padding */
+    }
+    .report-table th {
+        font-size: 0.85rem; /* Smaller header font size */
+    }
+    .report-table tbody tr {
+        font-size: 0.9rem; /* Smaller row font size */
+    }
+    .report-table tbody tr:hover {
+        background-color: #f0f0f0; /* Lighter hover effect */
+    }
+    .report-table tbody tr:nth-child(even) {
+        background-color: #f9f9f9; /* Lighter stripe for even rows */
+    }
+    .report-table tbody tr:last-child td {
+        border-bottom: none; /* No border on last row */
+    }
+    .report-table .attendance-percentage {
+        font-weight: bold;
+        font-size: 1rem; /* Slightly larger for emphasis */
+    }
+    .report-table .attendance-percentage.text-green-600 { color: #28a745; } /* Ensure strong green */
+    .report-table .attendance-percentage.text-red-600 { color: #dc3545
+; } /* Ensure strong red */
+    .report-page-title {
+        font-size: 1.8rem; /* Smaller title for mobile */
+        margin-bottom: 1rem; /* Less margin */
+    }
+    .report-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    .report-filter-form .form-group {
+        min-width: unset; /* Allow full width on mobile */
+    }
+     
+/* Additional styles for Faculty & Students page */
+
+
+/* rfid-attendance-system/apps/frontend/src/pages/facultyStudentsPage.css */
+/* ... (existing styles before table section) ... */
+
+/* Table Styling Refinements */
+.management-section-card-table-container { /* New wrapper for table */
+    border: 1px solid #D1D5DB; /* Subtle border for the entire table container */
+    border-radius: 10px; /* Consistent rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow for the table container */
+    overflow-x: auto; /* Ensures horizontal scroll for table on small screens */
+    background-color: #FFFFFF; /* Ensure background for table */
+}
+
+.management-table {
+    width: 100%;
+    border-collapse: collapse; /* Remove double borders */
+    min-width: 800px; /* Ensure horizontal scroll on smaller screens if content is wide */
+}
+
+.management-table thead {
+    background-color: #F8F9FA; /* Light header background */
+}
+
+.management-table-th {
+    padding: 1rem 1.25rem; /* More padding */
+    text-align: left;
+    font-size: 0.85rem; /* Slightly larger, more readable */
+    font-weight: 600;
+    color: #4B5563; /* Darker grey for header text */
+    text-transform: uppercase;
+    letter-spacing: 0.05em; /* A bit more spacing */
+    border-bottom: 2px solid #E5E7EB; /* Clearer separator */
+    white-space: nowrap; /* Prevent headers from wrapping */
+}
+.management-table-th.actions-th {
+    text-align: right; /* Align actions header to the right */
+}
+
+.management-table-td {
+    padding: 1rem 1.25rem; /* More padding */
+    text-align: left;
+    font-size: 0.95rem; /* Slightly smaller for body text */
+    color: #374151; /* Darker text */
+    border-bottom: 1px solid #F3F4F6; /* Very light border */
+    vertical-align: middle; /* Align content vertically */
+    white-space: nowrap; /* Prevent content from wrapping */
+}
+.management-table-td.actions-td {
+    text-align: right; /* Align actions cell to the right */
+}
+
+.management-table tbody tr:nth-child(even) {
+    background-color: #FFFFFF; /* Ensure white background for even rows */
+}
+.management-table tbody tr:nth-child(odd) {
+    background-color: #FBFBFB; /* Very subtle light grey for odd rows */
+}
+.management-table tbody tr:hover {
+    background-color: #EBF4FF; /* Light blue hover effect */
+    transition: background-color 0.2s ease;
+}
+.management-table tbody tr:last-child td {
+    border-bottom: none; /* No border on last row */
+}
+
+/* Action buttons within table cells */
+.table-action-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: inherit; /* Inherit font size from td */
+    margin-right: 0.8rem; /* Space between edit/delete */
+    font-weight: 600; /* Make text bold */
+    transition: color 0.2s ease;
+}
+.table-action-button:last-child {
+    margin-right: 0;
+}
+
+.table-action-button.edit-button {
+    color: #4f46e5; /* Indigo */
+}
+.table-action-button.edit-button:hover {
+    color: #3730a3;
+    text-decoration: underline;
+}
+.table-action-button.delete-button {
+    color: #ef4444; /* Red */
+}
+.table-action-button.delete-button:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .management-section-card table {
+        min-width: unset; /* Allow table to shrink more on very small screens */
+    }
+    .management-table-th, .management-table-td {
+        padding: 0.8rem 1rem; /* Adjust padding for mobile */
+        font-size: 0.85rem; /* Smaller font for mobile */
+    }
+    .table-action-button {
+        font-size: 0.8rem; /* Smaller button text */
+        margin-right: 0.5rem;
+    }
+}
