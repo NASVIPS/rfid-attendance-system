@@ -115,10 +115,25 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Use our application routes
+// --- Middleware Setup ---
+
+// Add CORS middleware BEFORE other middleware
 app.use(cors({
-    origin: true,
-    credentials: true
+    origin: [
+        'https://rfid-attendance-system-git-neon-vipss-projects.vercel.app',
+        'https://rfid-attendance-system-sigma.vercel.app',
+        'http://localhost:3000', // for local development
+        'http://localhost:5173', // if using Vite
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(morgan('dev'));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/device', deviceRoutes);
 app.use('/api/session', sessionRoutes);
