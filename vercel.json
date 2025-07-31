@@ -24,8 +24,8 @@
   ],
   "env": {
    
-    "DATABASE_URL": "@rfid_database_url",
-    "JWT_SECRET": "@rfid_jwt_secret",
+    "DATABASE_URL": "postgresql://postgres.rzttbyqibwerfxdthhxc:Nas-1-Vips-2-Management@aws-0-ap-south-1.pooler.supabase.com:6543/postgres",
+    "JWT_SECRET": "QJMAEhcrscsU5GZHzwA6FQthPaKkpa9QhjU7G3V9wN8",
     "JWT_EXP": "1h",
     "REFRESH_JWT_EXP": "7d",
     "CORS_ORIGIN": "https://your-frontend-app.vercel.app,http://localhost:3000",
