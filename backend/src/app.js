@@ -7,7 +7,7 @@ import { WebSocketServer } from 'ws';
 import createError from 'http-errors';
 import morgan from 'morgan';
 import os from 'os'; // FIX: Import 'os' using ES Module syntax at the top of the file
-
+import cors from 'cors'; // Import CORS middleware
 // Import our centralized Prisma client
 import prisma from './services/prisma.js';
 
