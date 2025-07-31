@@ -1,8 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client'
 
-const globalForPrisma = global;
-const prisma = globalForPrisma.prisma || new PrismaClient();
+const prisma = global.prisma || new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  // Add these configurations for serverless environments
+  log: ['error'],
+  errorFormat: 'minimal',
+})
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Prevent multiple instances in development
+if (process.env.NODE_ENV === 'development') global.prisma = prisma
 
-export default prisma;
+export default prisma
