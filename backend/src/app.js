@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 import express from 'express';
 import http from 'http';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import createError from 'http-errors';
 import morgan from 'morgan';
 import os from 'os'; // FIX: Import 'os' using ES Module syntax at the top of the file
@@ -33,6 +33,19 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 // --- Middleware Setup ---
+
+// Add CORS middleware BEFORE other middleware
+app.use(cors({
+    origin: [
+        'https://rfid-attendance-system-git-neon-vipss-projects.vercel.app',
+        'https://rfid-attendance-system-sigma.vercel.app',
+        'http://localhost:3000', // for local development
+        'http://localhost:5173', // if using Vite
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -101,7 +114,6 @@ app.locals.broadcastRfidToClient = (token, rfidUid) => {
     }
 };
 
-
 // --- Routes ---
 // Health Check (keep this as is)
 app.get('/api/health', async (req, res) => {
@@ -115,25 +127,6 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Use our application routes
-// --- Middleware Setup ---
-
-// Add CORS middleware BEFORE other middleware
-app.use(cors({
-    origin: [
-        'https://rfid-attendance-system-git-neon-vipss-projects.vercel.app',
-        'https://rfid-attendance-system-sigma.vercel.app',
-        'http://localhost:3000', // for local development
-        'http://localhost:5173', // if using Vite
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
-}));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(morgan('dev'));
-
 app.use('/api/auth', authRoutes);
 app.use('/api/device', deviceRoutes);
 app.use('/api/session', sessionRoutes);
@@ -149,6 +142,7 @@ app.use('/api/semester', semesterRoutes);
 app.use('/api/section', sectionRoutes);
 app.use('/api/subject-instance', subjectInstanceRoutes);
 app.use('/api/semester-subject', semesterSubjectRoutes);
+
 // NEW: RFID Scan Endpoint (from hardware for enrollment)
 // This endpoint is what your ESP32 hardware will hit when it scans an RFID tag
 // during the enrollment process for faculty/students.
@@ -169,7 +163,6 @@ app.post('/api/scan/enrollment-rfid', async (req, res, next) => {
         next(error);
     }
 });
-
 
 // Catch 404 Not Found errors
 app.use((req, res, next) => {
