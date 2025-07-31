@@ -27,7 +27,7 @@
     "JWT_SECRET": "QJMAEhcrscsU5GZHzwA6FQthPaKkpa9QhjU7G3V9wN8",
     "JWT_EXP": "1h",
     "REFRESH_JWT_EXP": "7d",
-    "CORS_ORIGIN": "https://rfid-attendance-system-sigma.vercel.app,http://localhost:3000",
+    "CORS_ORIGIN": "https://rfid-attendance-system-sigma.vercel.app,http://localhost:3000,http://localhost:8000",
     "VITE_BACKEND_URL": "https://rfid-attendance-system-sigma.vercel.app",
     "VITE_WEBSOCKET_URL": "wss://rfid-attendance-system-sigma.vercel.app"
   }
