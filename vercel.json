@@ -23,7 +23,7 @@
     }
   ],
   "env": {
-    "POSTGRES_PRISMA_URL": "postgres://postgres.iyjhxrpkrmydobnacscc:Jd7J9XSU9nSQAj4G@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x",
+"DATABASE_URL":"postgresql://neondb_owner:npg_U0l3HDkVufya@ep-divine-brook-a1j88z5d-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
     "JWT_SECRET": "QJMAEhcrscsU5GZHzwA6FQthPaKkpa9QhjU7G3V9wN8",
     "JWT_EXP": "1h",
     "REFRESH_JWT_EXP": "7d",
