@@ -37,14 +37,11 @@ const wss = new WebSocketServer({ server });
 // Add CORS middleware BEFORE other middleware
 app.use(cors({
     origin: [
-        'https://rfid-attendance-system-git-neon-vipss-projects.vercel.app',
-        'https://rfid-attendance-system-sigma.vercel.app',
-        'http://localhost:3000', // for local development
-        'http://localhost:5173', // if using Vite
+        'http://localhost:3000',
+        'http://localhost:8000',
+        'https://studentrfid.vercel.app'
     ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    credentials: true
 }));
 
 app.use(express.json());
