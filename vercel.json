@@ -23,7 +23,7 @@
     }
   ],
   "env": {
-    "DATABASE_URL": "postgresql://postgres.talxmdeonffcmflhfmoe:Nas-1-Vips-2-Management@aws-0-ap-south-1.pooler.supabase.com:6543/postgres",
+    "DATABASE_URL": "postgresql://postgres.rzttbyqibwerfxdthhxc:Nas-1-Vips-2-Management@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?statement_cache_size=0",   
     "JWT_SECRET": "QJMAEhcrscsU5GZHzwA6FQthPaKkpa9QhjU7G3V9wN8",
     "JWT_EXP": "1h",
     "REFRESH_JWT_EXP": "7d",
