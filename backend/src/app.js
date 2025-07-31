@@ -115,6 +115,10 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Use our application routes
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 app.use('/api/auth', authRoutes);
 app.use('/api/device', deviceRoutes);
 app.use('/api/session', sessionRoutes);
