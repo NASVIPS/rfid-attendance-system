@@ -19,7 +19,7 @@ async function createScheduledClass(data) {
     throw createError(400, 'Invalid Subject Instance ID provided.');
   }
 
-  // OPTIMIZATION 1: Move SubjectInstance fetch outside transaction to reduce transaction time
+  // Fetch SubjectInstance details
   const subjectInstance = await prisma.subjectInstance.findUnique({
     where: { id: parsedSubjectInstanceId },
     select: {
@@ -41,7 +41,7 @@ async function createScheduledClass(data) {
     throw createError(400, 'Invalid facultyId provided or derived.');
   }
 
-  // OPTIMIZATION 2: Check for duplicates outside transaction
+  // Check for existing scheduled class BEFORE creating
   const existingScheduledClass = await prisma.scheduledClass.findUnique({
     where: {
       dayOfWeek_subjectId_sectionId_startTime_endTime: {
@@ -59,46 +59,37 @@ async function createScheduledClass(data) {
   }
 
   try {
-    // OPTIMIZATION 3: Use transaction with increased timeout and minimal operations
-    const newScheduledClass = await prisma.$transaction(async (tx) => {
-      // Only the create operation inside transaction now
-      const createdClass = await tx.scheduledClass.create({
-        data: {
-          dayOfWeek,
-          startTime,
-          endTime,
-          subject: { connect: { id: derivedSubjectId } },
-          section: { connect: { id: derivedSectionId } },
-          faculty: derivedFacultyId ? { connect: { id: derivedFacultyId } } : undefined,
-          subjectInst: { connect: { id: parsedSubjectInstanceId } },
-        },
-        include: {
-          subject: true,
-          section: {
-            include: {
-              semester: {
-                include: {
-                  course: true,
-                },
+    // NO TRANSACTION - Direct create operation
+    const newScheduledClass = await prisma.scheduledClass.create({
+      data: {
+        dayOfWeek,
+        startTime,
+        endTime,
+        subject: { connect: { id: derivedSubjectId } },
+        section: { connect: { id: derivedSectionId } },
+        faculty: derivedFacultyId ? { connect: { id: derivedFacultyId } } : undefined,
+        subjectInst: { connect: { id: parsedSubjectInstanceId } },
+      },
+      include: {
+        subject: true,
+        section: {
+          include: {
+            semester: {
+              include: {
+                course: true,
               },
             },
           },
-          faculty: { select: { id: true, name: true, empId: true } },
-          subjectInst: {
-            include: {
-              subject: true,
-              section: true,
-              faculty: { select: { id: true, name: true, empId: true } }
-            }
-          }
         },
-      });
-
-      return createdClass;
-    }, {
-      // OPTIMIZATION 4: Increase transaction timeout for serverless environments
-      timeout: 15000, // 15 seconds timeout
-      isolationLevel: 'ReadCommitted' // Use lighter isolation level
+        faculty: { select: { id: true, name: true, empId: true } },
+        subjectInst: {
+          include: {
+            subject: true,
+            section: true,
+            faculty: { select: { id: true, name: true, empId: true } }
+          }
+        }
+      },
     });
 
     return newScheduledClass;
@@ -110,9 +101,6 @@ async function createScheduledClass(data) {
     if (error.code === 'P2002') {
       console.error('Prisma unique constraint error during scheduled class creation:', error.meta);
       throw createError(409, 'A class is already scheduled for this subject, section, day, and time slot.');
-    }
-    if (error.code === 'P2028') {
-      throw createError(408, 'Request timeout: The operation took too long to complete. Please try again.');
     }
     throw createError(500, 'Failed to create scheduled class due to a database error.');
   }
@@ -179,7 +167,7 @@ async function updateScheduledClass(id, data) {
   let derivedSectionId;
   let derivedFacultyId;
 
-  // OPTIMIZATION 5: Move all validation queries outside transaction
+  // Fetch new SubjectInstance details if subjectInstanceId is being updated
   if (parsedSubjectInstanceId) {
     const newSubjectInstance = await prisma.subjectInstance.findUnique({
       where: { id: parsedSubjectInstanceId },
@@ -193,6 +181,7 @@ async function updateScheduledClass(id, data) {
     derivedFacultyId = newSubjectInstance.facultyId;
   }
 
+  // Get existing scheduled class to compare
   const existingScheduledClass = await prisma.scheduledClass.findUnique({
     where: { id: parseInt(id) },
     include: {
@@ -206,7 +195,7 @@ async function updateScheduledClass(id, data) {
     throw createError(404, 'Scheduled class not found.');
   }
 
-  // Check for conflicts before transaction
+  // Check for conflicts before updating
   const effectiveDayOfWeek = dayOfWeek || existingScheduledClass.dayOfWeek;
   const effectiveStartTime = startTime || existingScheduledClass.startTime;
   const effectiveEndTime = endTime || existingScheduledClass.endTime;
@@ -249,7 +238,7 @@ async function updateScheduledClass(id, data) {
   };
 
   try {
-    // OPTIMIZATION 6: Simple update without transaction for single operations
+    // Direct update without transaction
     const result = await prisma.scheduledClass.update({
       where: { id: parseInt(id) },
       data: updateData,
@@ -283,6 +272,9 @@ async function updateScheduledClass(id, data) {
     if (error.code === 'P2003') {
       throw createError(400, 'Invalid subjectInstanceId, facultyId, subjectId, or sectionId provided for update.');
     }
+    if (error.code === 'P2002') {
+      throw createError(409, 'Another class is already scheduled for this subject, section, day, and time slot.');
+    }
     throw createError(500, 'Failed to update scheduled class due to a database error.');
   }
 }
@@ -305,7 +297,7 @@ async function deleteScheduledClass(id) {
   }
 }
 
-// OPTIMIZATION 7: Add caching for frequently accessed dropdown data
+// Simple caching for dropdown data to improve performance
 let cachedSubjects = null;
 let cachedSections = null;
 let cachedFaculty = null;
@@ -321,9 +313,14 @@ async function getAllSubjects() {
     return cachedSubjects;
   }
   
-  cachedSubjects = await prisma.subject.findMany();
-  cacheExpiry = now + CACHE_DURATION;
-  return cachedSubjects;
+  try {
+    cachedSubjects = await prisma.subject.findMany();
+    cacheExpiry = now + CACHE_DURATION;
+    return cachedSubjects;
+  } catch (error) {
+    console.error('Error fetching subjects:', error);
+    throw createError(500, 'Failed to fetch subjects.');
+  }
 }
 
 /**
@@ -335,18 +332,23 @@ async function getAllSections() {
     return cachedSections;
   }
   
-  cachedSections = await prisma.section.findMany({
-    include: {
-      semester: {
-        include: {
-          course: true,
+  try {
+    cachedSections = await prisma.section.findMany({
+      include: {
+        semester: {
+          include: {
+            course: true,
+          },
         },
       },
-    },
-    orderBy: { name: 'asc' },
-  });
-  cacheExpiry = now + CACHE_DURATION;
-  return cachedSections;
+      orderBy: { name: 'asc' },
+    });
+    cacheExpiry = now + CACHE_DURATION;
+    return cachedSections;
+  } catch (error) {
+    console.error('Error fetching sections:', error);
+    throw createError(500, 'Failed to fetch sections.');
+  }
 }
 
 /**
@@ -358,11 +360,16 @@ async function getAllFaculty() {
     return cachedFaculty;
   }
   
-  cachedFaculty = await prisma.faculty.findMany({
-    select: { id: true, name: true, empId: true },
-  });
-  cacheExpiry = now + CACHE_DURATION;
-  return cachedFaculty;
+  try {
+    cachedFaculty = await prisma.faculty.findMany({
+      select: { id: true, name: true, empId: true },
+    });
+    cacheExpiry = now + CACHE_DURATION;
+    return cachedFaculty;
+  } catch (error) {
+    console.error('Error fetching faculty:', error);
+    throw createError(500, 'Failed to fetch faculty.');
+  }
 }
 
 export {
