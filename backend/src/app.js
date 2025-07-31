@@ -4,7 +4,6 @@ import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
-import cors from 'cors';
 import createError from 'http-errors';
 import morgan from 'morgan';
 import os from 'os'; // FIX: Import 'os' using ES Module syntax at the top of the file
@@ -34,10 +33,7 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 // --- Middleware Setup ---
-app.use(cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true
-}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
