@@ -19,36 +19,32 @@ async function createScheduledClass(data) {
     throw createError(400, 'Invalid Subject Instance ID provided.');
   }
 
-  // Fetch the SubjectInstance to get subjectId, sectionId, and assigned facultyId
-  const subjectInstance = await prisma.subjectInstance.findUnique({
-    where: { id: parsedSubjectInstanceId },
-    select: {
-      subjectId: true,
-      sectionId: true,
-      facultyId: true // The faculty assigned to this instance
-    }
-  });
-
-  if (!subjectInstance) {
-    throw createError(404, 'Subject Instance not found. Cannot schedule class.');
-  }
-
-  // Use the subjectId, sectionId, and facultyId from the SubjectInstance
-  const derivedSubjectId = subjectInstance.subjectId;
-  const derivedSectionId = subjectInstance.sectionId;
-  const derivedFacultyId = facultyId ? parseInt(facultyId) : subjectInstance.facultyId; // Use provided facultyId or default to instance's faculty
-
-  // Validate facultyId if provided or derived
-  if (isNaN(derivedFacultyId)) {
-    throw createError(400, 'Invalid facultyId provided or derived.');
-  }
-
+  // Use a transaction to ensure all operations are atomic
   try {
     const newScheduledClass = await prisma.$transaction(async (tx) => {
-      // 1. Check for duplicate ScheduledClass using the NEW unique constraint
+      // 1. Fetch the SubjectInstance in the transaction to ensure it exists
+      const subjectInstance = await tx.subjectInstance.findUnique({
+        where: { id: parsedSubjectInstanceId },
+        select: {
+          subjectId: true,
+          sectionId: true,
+          facultyId: true // The faculty assigned to this instance
+        }
+      });
+
+      if (!subjectInstance) {
+        throw createError(404, 'Subject Instance not found. Cannot schedule class.');
+      }
+
+      // Use the subjectId, sectionId, and facultyId from the SubjectInstance
+      const derivedSubjectId = subjectInstance.subjectId;
+      const derivedSectionId = subjectInstance.sectionId;
+      const derivedFacultyId = facultyId ? parseInt(facultyId) : subjectInstance.facultyId;
+
+      // 2. Check for duplicate ScheduledClass using the new unique constraint
       const existingScheduledClass = await tx.scheduledClass.findUnique({
         where: {
-          dayOfWeek_subjectId_sectionId_startTime_endTime: { // UPDATED: Use the new compound unique key
+          dayOfWeek_subjectId_sectionId_startTime_endTime: {
             dayOfWeek,
             subjectId: derivedSubjectId,
             sectionId: derivedSectionId,
@@ -56,13 +52,14 @@ async function createScheduledClass(data) {
             endTime
           },
         },
+        select: { id: true } // Select only the ID to make the query more efficient
       });
 
       if (existingScheduledClass) {
         throw createError(409, 'A class is already scheduled for this subject, section, day, and time slot.');
       }
 
-      // 2. Create the ScheduledClass
+      // 3. Create the ScheduledClass
       const createdClass = await tx.scheduledClass.create({
         data: {
           dayOfWeek,
@@ -74,21 +71,29 @@ async function createScheduledClass(data) {
           subjectInst: { connect: { id: parsedSubjectInstanceId } }, // Link to the SubjectInstance
         },
         include: {
-          subject: true,
+          subject: {
+            select: { id: true, name: true, code: true }
+          },
           section: {
-            include: {
+            select: {
+              id: true,
+              name: true,
               semester: {
-                include: {
-                  course: true,
-                },
-              },
-            },
+                select: {
+                  number: true,
+                  course: {
+                    select: { id: true, name: true }
+                  }
+                }
+              }
+            }
           },
           faculty: { select: { id: true, name: true, empId: true } },
-          subjectInst: { // Include SubjectInstance details
-            include: {
-              subject: true,
-              section: true,
+          subjectInst: {
+            select: {
+              id: true,
+              subject: { select: { id: true, name: true, code: true } },
+              section: { select: { id: true, name: true } },
               faculty: { select: { id: true, name: true, empId: true } }
             }
           }
@@ -118,31 +123,54 @@ async function createScheduledClass(data) {
  */
 async function getAllScheduledClasses() {
   return prisma.scheduledClass.findMany({
-    include: {
-      subject: true,
-      section: {
-        include: {
-          semester: {
-            include: {
-              course: true,
-            },
-          },
-        },
+    select: {
+      id: true,
+      dayOfWeek: true,
+      startTime: true,
+      endTime: true,
+      facultyId: true,
+      subjectId: true,
+      sectionId: true,
+      subjectInstId: true,
+      subject: {
+        select: { id: true, name: true, code: true }
       },
-      faculty: { select: { id: true, name: true, empId: true } },
-      subjectInst: { // This needs deeper includes
-        include: {
-          subject: true,
+      section: {
+        select: {
+          id: true,
+          name: true,
+          semester: {
+            select: {
+              number: true,
+              course: {
+                select: { id: true, name: true }
+              }
+            }
+          }
+        }
+      },
+      faculty: {
+        select: { id: true, name: true, empId: true }
+      },
+      subjectInst: {
+        select: {
+          id: true,
+          subject: { select: { id: true, name: true, code: true } },
           section: {
-            include: {
+            select: {
+              id: true,
+              name: true,
               semester: {
-                include: {
-                  course: true, // Course details via semester
+                select: {
+                  number: true,
+                  course: {
+                    select: { id: true, name: true }
+                  }
                 }
               }
             }
-          }, // Section details for the instance, including nested semester
-          faculty: { select: { id: true, name: true, empId: true } } // Faculty for the instance
+          },
+          faculty: { select: { id: true, name: true, empId: true } }
         }
       }
     },
@@ -213,7 +241,7 @@ async function updateScheduledClass(id, data) {
   ) {
       const existingConflict = await prisma.scheduledClass.findFirst({
           where: {
-              dayOfWeek_subjectId_sectionId_startTime_endTime: { // UPDATED: Use the new compound unique key
+              dayOfWeek_subjectId_sectionId_startTime_endTime: {
                 dayOfWeek: effectiveDayOfWeek,
                 subjectId: effectiveSubjectId,
                 sectionId: effectiveSectionId,
@@ -247,21 +275,27 @@ async function updateScheduledClass(id, data) {
       where: { id: parseInt(id) },
       data: updateData,
       include: {
-        subject: true,
+        subject: { select: { id: true, name: true, code: true } },
         section: {
-          include: {
+          select: {
+            id: true,
+            name: true,
             semester: {
-              include: {
-                course: true,
-              },
-            },
-          },
+              select: {
+                number: true,
+                course: {
+                  select: { id: true, name: true }
+                }
+              }
+            }
+          }
         },
         faculty: { select: { id: true, name: true, empId: true } },
         subjectInst: {
-          include: {
-            subject: true,
-            section: true,
+          select: {
+            id: true,
+            subject: { select: { id: true, name: true, code: true } },
+            section: { select: { id: true, name: true } },
             faculty: { select: { id: true, name: true, empId: true } }
           }
         }
@@ -302,7 +336,13 @@ async function deleteScheduledClass(id) {
  * Get all subjects for dropdowns.
  */
 async function getAllSubjects() {
-  return prisma.subject.findMany();
+  return prisma.subject.findMany({
+    select: {
+      id: true,
+      name: true,
+      code: true
+    }
+  });
 }
 
 /**
@@ -310,12 +350,17 @@ async function getAllSubjects() {
  */
 async function getAllSections() {
   return prisma.section.findMany({
-    include: {
+    select: {
+      id: true,
+      name: true,
       semester: {
-        include: {
-          course: true,
-        },
-      },
+        select: {
+          number: true,
+          course: {
+            select: { id: true, name: true }
+          }
+        }
+      }
     },
     orderBy: { name: 'asc' },
   });
