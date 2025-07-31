@@ -3,7 +3,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 // Get backend URL from environment variables
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+// make it import from VITE_BACKEND_URL from vercel.json
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'; // Fallback to local server if not set
 
 // Create an Axios instance
 const api = axios.create({
