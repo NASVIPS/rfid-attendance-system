@@ -1,35 +1,33 @@
 {
   "builds": [
     {
-      "src": "backend/src/app.js",
+      "src": "backend/", 
       "use": "@vercel/node"
     },
     {
-      "src": "frontend/index.html",
+      "src": "frontend/", 
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist" 
+        "distDir": "dist"
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/src/app.js" 
+      "dest": "backend/src/app.js"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/$1" 
+      "dest": "frontend/$1"
     }
   ],
   "env": {
-   
-    "DATABASE_URL": "postgresql://postgres.rzttbyqibwerfxdthhxc:Nas-1-Vips-2-Management@aws-0-ap-south-1.pooler.supabase.com:6543/postgres",
+    "DATABASE_URL": "postgresql://postgres.talxmdeonffcmflhfmoe:Nas-1-Vips-2-Management@aws-0-ap-south-1.pooler.supabase.com:6543/postgres",
     "JWT_SECRET": "QJMAEhcrscsU5GZHzwA6FQthPaKkpa9QhjU7G3V9wN8",
     "JWT_EXP": "1h",
     "REFRESH_JWT_EXP": "7d",
     "CORS_ORIGIN": "https://your-frontend-app.vercel.app,http://localhost:3000",
-
     "VITE_BACKEND_URL": "https://your-backend-app.vercel.app/api",
     "VITE_WEBSOCKET_URL": "wss://your-backend-app.vercel.app"
   }
