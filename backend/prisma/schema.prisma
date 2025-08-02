@@ -25,7 +25,7 @@ model Department {
   name    String
   courses Course[]
 
-  @@map("departments") // Correct collection name
+  @@map("departments")
 }
 
 model Course {
@@ -37,7 +37,7 @@ model Course {
   degreeType    String
   semesters     Semester[]
 
-  @@map("courses") // Correct collection name
+  @@map("courses")
 }
 
 model Semester {
@@ -51,7 +51,7 @@ model Semester {
   SemesterSubject SemesterSubject[]
 
   @@unique([courseId, number, academicYear])
-  @@map("semesters") // Correct collection name
+  @@map("semesters")
 }
 
 model Section {
@@ -63,7 +63,7 @@ model Section {
   instances        SubjectInstance[]
   scheduledClasses ScheduledClass[]
 
-  @@map("sections") // Correct collection name
+  @@map("sections")
 }
 
 model Subject {
@@ -75,7 +75,7 @@ model Subject {
   scheduledClasses ScheduledClass[]
   SemesterSubject  SemesterSubject[]
 
-  @@map("subjects") // Correct collection name
+  @@map("subjects")
 }
 
 model SubjectInstance {
@@ -90,17 +90,17 @@ model SubjectInstance {
   ScheduledClass ScheduledClass[]
 
   @@unique([subjectId, sectionId, facultyId])
-  @@map("subjectinstances") // Correct collection name
+  @@map("subjectinstances")
 }
 
 model User {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   email          String   @unique
   passwordHash   String
-  role           String // ADMIN | PCOORD | TEACHER
-  facultyProfile Faculty? // This relation is now defined in the Faculty model
+  role           String
+  facultyProfile Faculty?
 
-  @@map("users") // Correct collection name
+  @@map("users")
 }
 
 model Faculty {
@@ -116,7 +116,7 @@ model Faculty {
   classSessions    ClassSession[]
   scheduledClasses ScheduledClass[]
 
-  @@map("faculties") // Correct collection name
+  @@map("faculties")
 }
 
 model Student {
@@ -129,7 +129,8 @@ model Student {
   sectionId    String          @db.ObjectId
   logs         AttendanceLog[]
 
-  @@map("students") // Correct collection name
+  @@map("students")
+  @@index([sectionId]) // Index for non-unique fields is still good
 }
 
 model Device {
@@ -146,7 +147,7 @@ model Device {
   classSessions ClassSession[]
   logs          AttendanceLog[]
 
-  @@map("devices") // Correct collection name
+  @@map("devices")
 }
 
 model ClassSession {
@@ -162,7 +163,10 @@ model ClassSession {
   isClosed      Boolean         @default(false)
   logs          AttendanceLog[]
 
-  @@map("classsessions") // Correct collection name
+  @@map("classsessions")
+  @@index([subjectInstId])
+  @@index([teacherId])
+  @@index([isClosed])
 }
 
 model AttendanceLog {
@@ -179,7 +183,8 @@ model AttendanceLog {
   manualOverride   Boolean          @default(false)
 
   @@unique([studentId, sessionId])
-  @@map("attendancelogs") // Correct collection name
+  @@map("attendancelogs")
+  @@index([sessionId])
 }
 
 enum AttendanceStatus {
@@ -190,7 +195,7 @@ enum AttendanceStatus {
 model ScheduledClass {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   dayOfWeek     DayOfWeek
-  startTime     String // HH:MM:SS
+  startTime     String
   endTime       String
   subject       Subject         @relation(fields: [subjectId], references: [id])
   subjectId     String          @db.ObjectId
@@ -205,7 +210,7 @@ model ScheduledClass {
 
   @@unique([dayOfWeek, subjectId, sectionId, startTime, endTime])
   @@index([subjectInstId])
-  @@map("scheduledclasses") // Correct collection name
+  @@map("scheduledclasses")
 }
 
 model SemesterSubject {
@@ -217,5 +222,5 @@ model SemesterSubject {
   createdAt  DateTime @default(now())
 
   @@unique([semesterId, subjectId])
-  @@map("semestersubjects") // Correct collection name
+  @@map("semestersubjects")
 }
