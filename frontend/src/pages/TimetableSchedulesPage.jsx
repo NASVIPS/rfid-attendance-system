@@ -97,14 +97,13 @@ function SubjectInstanceAssignment({
     );
 }
 
-
-// Scheduled Class Management Component
-// NEW CODE (replace the entire ScheduledClassManagement function)
 // Scheduled Class Management Component
 function ScheduledClassManagement({
-    scheduledClasses, subjectInstances, facultyMembers, // facultyMembers is still passed, but used differently now
-    scheduledClassFormMode, setScheduledClassFormMode, currentScheduledClass, setCurrentScheduledClass,
-    scheduledClassFormData, setScheduledClassFormData, scheduledClassHandlers
+    scheduledClasses, subjectInstances,
+    scheduledClassFormMode,
+    currentScheduledClass,
+    scheduledClassFormData,
+    scheduledClassHandlers
 }) {
     // Helper function to format Subject Instance for display in dropdown
     const formatSubjectInstanceLabel = (instance) => {
@@ -122,6 +121,13 @@ function ScheduledClassManagement({
         return `${subjectName} (${subjectCode}) - ${sectionName} (Sem ${semesterNum}, ${courseName}) by ${facultyName} (${facultyEmpId})`;
     };
 
+    const selectOptions = subjectInstances.map(instance => ({
+        value: instance.id,
+        label: formatSubjectInstanceLabel(instance),
+    }));
+
+    const selectedValue = selectOptions.find(option => option.value === scheduledClassFormData.subjectInstanceId);
+
     return (
         <>
             <div className="management-section-card">
@@ -133,22 +139,15 @@ function ScheduledClassManagement({
                         <Select
                             id="subjectInstanceId"
                             name="subjectInstanceId"
-                            options={subjectInstances.map(instance => ({
-                                value: instance.id,
-                                label: formatSubjectInstanceLabel(instance),
-                            }))}
-                            // Set the selected value. react-select uses { value, label } objects.
-                            value={subjectInstances.find(inst => inst.id === scheduledClassFormData.subjectInstanceId) ?
-                                { value: scheduledClassFormData.subjectInstanceId, label: formatSubjectInstanceLabel(subjectInstances.find(inst => inst.id === scheduledClassFormData.subjectInstanceId)) } : null
-                            }
-                            // When an option is selected, update your form state.
+                            options={selectOptions}
+                            value={selectedValue}
                             onChange={(selectedOption) => scheduledClassHandlers.handleFormChange({ target: { name: 'subjectInstanceId', value: selectedOption ? selectedOption.value : '' } })}
                             required
-                            className="mt-1 basic-single" // basic-single and basic-multi classes are often used for react-select styling
+                            className="mt-1 basic-single"
                             classNamePrefix="select"
                             placeholder="Search or Select Assignment..."
-                            isClearable // Allows clearing the selected value
-                            isSearchable // Enables search functionality
+                            isClearable
+                            isSearchable
                         />
                     </div>
                     <div>
@@ -166,8 +165,6 @@ function ScheduledClassManagement({
                         <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">End Time (HH:MM)</label>
                         <input type="time" id="endTime" name="endTime" value={scheduledClassFormData.endTime} onChange={scheduledClassHandlers.handleFormChange} required className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                     </div>
-                    {/* REMOVED: The "Faculty (Optional - from Assignment)" dropdown as requested */}
-                    {/* The faculty ID is typically inferred from the selected Subject Instance. */}
 
                     <div className="md:col-span-3 flex justify-end space-x-3">
                         <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none">
@@ -229,7 +226,7 @@ function TimetableSchedulesPage() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    const [activeSubSection, setActiveSubSection] = useState('assignments'); // 'assignments', 'schedules'
+    const [activeSubSection, setActiveSubSection] = useState('assignments');
 
     // State for Subject Instance Management
     const [subjectInstances, setSubjectInstances] = useState([]);
@@ -247,15 +244,14 @@ function TimetableSchedulesPage() {
     const [scheduledClassFormMode, setScheduledClassFormMode] = useState('create');
     const [currentScheduledClass, setCurrentScheduledClass] = useState(null);
     const [scheduledClassFormData, setScheduledClassFormData] = useState({
-        subjectInstanceId: '', dayOfWeek: '', startTime: '', endTime: '', facultyId: '', // facultyId here is optional for ScheduledClass, derived from SubjectInstance normally
+        subjectInstanceId: '', dayOfWeek: '', startTime: '', endTime: '',
     });
 
-    // Fetch All Necessary Dropdown Data
     const fetchDropdownData = async () => {
         try {
             const [subjectsRes, sectionsRes, facultyRes] = await Promise.all([
                 api.get('/api/subject'),
-                api.get('/api/section'), // Using the new /api/section route
+                api.get('/api/section'),
                 api.get('/api/faculty'),
             ]);
             setSubjects(subjectsRes.data);
@@ -267,7 +263,6 @@ function TimetableSchedulesPage() {
         }
     };
 
-    // Fetch Subject Instances
     const fetchSubjectInstances = async () => {
         try {
             const response = await api.get('/api/subject-instance');
@@ -278,7 +273,6 @@ function TimetableSchedulesPage() {
         }
     };
 
-    // Fetch Scheduled Classes
     const fetchScheduledClasses = async () => {
         try {
             const response = await api.get('/api/scheduled-classes');
@@ -289,12 +283,12 @@ function TimetableSchedulesPage() {
         }
     };
 
-
     // Subject Instance Handlers
     const subjectInstanceHandlers = {
         handleFormChange: (e) => {
             const { name, value } = e.target;
-            setSubjectInstanceFormData(prev => ({ ...prev, [name]: value ? parseInt(value) : '' }));
+            // FIX: Removed parseInt. Treat all IDs as strings.
+            setSubjectInstanceFormData(prev => ({ ...prev, [name]: value }));
         },
         handleFormSubmit: async (e) => {
             e.preventDefault();
@@ -306,10 +300,8 @@ function TimetableSchedulesPage() {
                     await api.put(`/api/subject-instance/${currentSubjectInstance.id}`, subjectInstanceFormData);
                     toast.success('Subject Instance updated successfully!');
                 }
-                setSubjectInstanceFormMode('create');
-                setCurrentSubjectInstance(null);
-                setSubjectInstanceFormData({ subjectId: '', sectionId: '', facultyId: '' });
-                fetchSubjectInstances(); // Refresh list
+                subjectInstanceHandlers.resetForm();
+                fetchSubjectInstances();
             } catch (error) {
                 console.error('Error saving subject instance:', error);
                 toast.error(error.response?.data?.message || 'Failed to save subject instance.');
@@ -323,11 +315,11 @@ function TimetableSchedulesPage() {
             });
         },
         handleDeleteClick: async (instanceId) => {
-            if (window.confirm('Are you sure you want to delete this Subject Instance? This might also delete associated Scheduled Classes. This action cannot be undone.')) {
+            if (window.confirm('Are you sure you want to delete this Subject Instance?')) {
                 try {
                     await api.delete(`/api/subject-instance/${instanceId}`);
                     toast.success('Subject Instance deleted successfully!');
-                    fetchSubjectInstances(); // Refresh list
+                    fetchSubjectInstances();
                 } catch (error) {
                     console.error('Error deleting subject instance:', error);
                     toast.error(error.response?.data?.message || 'Failed to delete subject instance.');
@@ -345,32 +337,21 @@ function TimetableSchedulesPage() {
     const scheduledClassHandlers = {
         handleFormChange: (e) => {
             const { name, value } = e.target;
-            setScheduledClassFormData(prev => ({ ...prev, [name]: (name === 'subjectInstanceId' || name === 'facultyId') ? (value ? parseInt(value) : '') : value }));
+            // FIX: Removed parseInt. Treat all IDs as strings.
+            setScheduledClassFormData(prev => ({ ...prev, [name]: value }));
         },
         handleFormSubmit: async (e) => {
             e.preventDefault();
             try {
-                // For 'create' mode, if facultyId is not explicitly selected in the form,
-                // try to derive it from the selected subjectInstanceId
-                const dataToSend = { ...scheduledClassFormData };
-                if (scheduledClassFormMode === 'create' && !dataToSend.facultyId && dataToSend.subjectInstanceId) {
-                    const selectedInstance = subjectInstances.find(inst => inst.id === dataToSend.subjectInstanceId);
-                    if (selectedInstance) {
-                        dataToSend.facultyId = selectedInstance.facultyId;
-                    }
-                }
-
                 if (scheduledClassFormMode === 'create') {
-                    await api.post('/api/scheduled-classes', dataToSend);
+                    await api.post('/api/scheduled-classes', scheduledClassFormData);
                     toast.success('Scheduled Class added successfully!');
                 } else {
-                    await api.put(`/api/scheduled-classes/${currentScheduledClass.id}`, dataToSend);
+                    await api.put(`/api/scheduled-classes/${currentScheduledClass.id}`, scheduledClassFormData);
                     toast.success('Scheduled Class updated successfully!');
                 }
-                setScheduledClassFormMode('create');
-                setCurrentScheduledClass(null);
-                setScheduledClassFormData({ subjectInstanceId: '', dayOfWeek: '', startTime: '', endTime: '', facultyId: '' });
-                fetchScheduledClasses(); // Refresh list
+                scheduledClassHandlers.resetForm();
+                fetchScheduledClasses();
             } catch (error) {
                 console.error('Error saving scheduled class:', error);
                 toast.error(error.response?.data?.message || 'Failed to save scheduled class.');
@@ -384,15 +365,14 @@ function TimetableSchedulesPage() {
                 dayOfWeek: sClass.dayOfWeek,
                 startTime: sClass.startTime,
                 endTime: sClass.endTime,
-                facultyId: sClass.facultyId || '', // Ensure facultyId is set if present
             });
         },
         handleDeleteClick: async (sClassId) => {
-            if (window.confirm('Are you sure you want to delete this Scheduled Class? This action cannot be undone.')) {
+            if (window.confirm('Are you sure you want to delete this Scheduled Class?')) {
                 try {
                     await api.delete(`/api/scheduled-classes/${sClassId}`);
                     toast.success('Scheduled Class deleted successfully!');
-                    fetchScheduledClasses(); // Refresh list
+                    fetchScheduledClasses();
                 } catch (error) {
                     console.error('Error deleting scheduled class:', error);
                     toast.error(error.response?.data?.message || 'Failed to delete scheduled class.');
@@ -402,25 +382,24 @@ function TimetableSchedulesPage() {
         resetForm: () => {
             setScheduledClassFormMode('create');
             setCurrentScheduledClass(null);
-            setScheduledClassFormData({ subjectInstanceId: '', dayOfWeek: '', startTime: '', endTime: '', facultyId: '' });
+            setScheduledClassFormData({ subjectInstanceId: '', dayOfWeek: '', startTime: '', endTime: '' });
         }
     };
 
-
-    // Initial data fetch on component mount
     useEffect(() => {
-        fetchDropdownData(); // Fetch once for all dropdowns
+        fetchDropdownData();
+        fetchSubjectInstances();
+        fetchScheduledClasses();
+    }, []);
 
+    useEffect(() => {
         if (activeSubSection === 'assignments') {
             fetchSubjectInstances();
         } else if (activeSubSection === 'schedules') {
             fetchScheduledClasses();
-            fetchSubjectInstances(); // Needed for subject instance dropdown in scheduled classes
         }
     }, [activeSubSection]);
 
-
-    // Conditional rendering based on active sub-section
     const renderContent = () => {
         if (activeSubSection === 'assignments') {
             return (
@@ -429,26 +408,24 @@ function TimetableSchedulesPage() {
                     subjects={subjects}
                     sections={sections}
                     facultyMembers={facultyMembers}
-                    subjectInstanceFormMode={subjectInstanceFormMode} setSubjectInstanceFormMode={setSubjectInstanceFormMode}
-                    currentSubjectInstance={currentSubjectInstance} setCurrentSubjectInstance={setCurrentSubjectInstance}
-                    subjectInstanceFormData={subjectInstanceFormData} setSubjectInstanceFormData={setSubjectInstanceFormData}
+                    subjectInstanceFormMode={subjectInstanceFormMode}
+                    currentSubjectInstance={currentSubjectInstance}
+                    subjectInstanceFormData={subjectInstanceFormData}
                     subjectInstanceHandlers={subjectInstanceHandlers}
                 />
             );
-        // NEW CODE (Pass facultyMembers as a prop)
-} else if (activeSubSection === 'schedules') {
-    return (
-        <ScheduledClassManagement
-            scheduledClasses={scheduledClasses}
-            subjectInstances={subjectInstances}
-            facultyMembers={facultyMembers} // ADD this line to pass the prop
-            scheduledClassFormMode={scheduledClassFormMode} setScheduledClassFormMode={setScheduledClassFormMode}
-            currentScheduledClass={currentScheduledClass} setCurrentScheduledClass={setCurrentScheduledClass}
-            scheduledClassFormData={scheduledClassFormData} setScheduledClassFormData={setScheduledClassFormData}
-            scheduledClassHandlers={scheduledClassHandlers}
-        />
-    );
-}
+        } else if (activeSubSection === 'schedules') {
+            return (
+                <ScheduledClassManagement
+                    scheduledClasses={scheduledClasses}
+                    subjectInstances={subjectInstances}
+                    scheduledClassFormMode={scheduledClassFormMode}
+                    currentScheduledClass={currentScheduledClass}
+                    scheduledClassFormData={scheduledClassFormData}
+                    scheduledClassHandlers={scheduledClassHandlers}
+                />
+            );
+        }
         return <p>Select a management option.</p>;
     };
 
@@ -471,7 +448,6 @@ function TimetableSchedulesPage() {
                         Class Schedules
                     </button>
                 </div>
-
                 {renderContent()}
             </div>
         </div>
