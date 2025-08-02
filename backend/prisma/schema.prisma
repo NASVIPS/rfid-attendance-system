@@ -1,7 +1,7 @@
 // schema.prisma
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -20,152 +20,166 @@ enum DayOfWeek {
 }
 
 model Department {
-  id      Int      @id @default(autoincrement())
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
   code    String   @unique
   name    String
   courses Course[]
+
+  @@map("departments") // Correct collection name
 }
 
 model Course {
-  id            Int        @id @default(autoincrement())
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
   department    Department @relation(fields: [departmentId], references: [id])
-  departmentId  Int
+  departmentId  String     @db.ObjectId
   name          String
   durationYears Int
-  degreeType    String // UG / PG
+  degreeType    String
   semesters     Semester[]
+
+  @@map("courses") // Correct collection name
 }
 
-// NEW CODE (Add academicYear field)
 model Semester {
-  id              Int               @id @default(autoincrement())
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
   course          Course            @relation(fields: [courseId], references: [id])
-  courseId        Int
+  courseId        String            @db.ObjectId
   number          Int
-  type            String // odd / even
-  academicYear    Int               @default(2024) // ADD @default(2024) here
+  type            String
+  academicYear    Int               @default(2024)
   sections        Section[]
   SemesterSubject SemesterSubject[]
 
-  @@unique([courseId, number, academicYear]) // Keep this unique constraint
+  @@unique([courseId, number, academicYear])
+  @@map("semesters") // Correct collection name
 }
 
 model Section {
-  id               Int               @id @default(autoincrement())
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
   name             String
-  semester         Semester          @relation(fields: [semesterId], references: [id])
-  semesterId       Int
+  semester         Semester         @relation(fields: [semesterId], references: [id])
+  semesterId       String           @db.ObjectId
   students         Student[]
   instances        SubjectInstance[]
   scheduledClasses ScheduledClass[]
+
+  @@map("sections") // Correct collection name
 }
 
 model Subject {
-  id               Int               @id @default(autoincrement())
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
   code             String            @unique
   name             String
   credits          Int?
   instances        SubjectInstance[]
   scheduledClasses ScheduledClass[]
   SemesterSubject  SemesterSubject[]
+
+  @@map("subjects") // Correct collection name
 }
 
 model SubjectInstance {
-  id             Int              @id @default(autoincrement())
-  subject        Subject          @relation(fields: [subjectId], references: [id])
-  subjectId      Int
-  section        Section          @relation(fields: [sectionId], references: [id])
-  sectionId      Int
-  faculty        Faculty          @relation(fields: [facultyId], references: [id], onDelete: Cascade) // MODIFIED: Added onDelete: Cascade
-  facultyId      Int
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  subject        Subject        @relation(fields: [subjectId], references: [id])
+  subjectId      String         @db.ObjectId
+  section        Section        @relation(fields: [sectionId], references: [id])
+  sectionId      String         @db.ObjectId
+  faculty        Faculty        @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  facultyId      String         @db.ObjectId
   classSessions  ClassSession[]
   ScheduledClass ScheduledClass[]
 
   @@unique([subjectId, sectionId, facultyId])
+  @@map("subjectinstances") // Correct collection name
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   email          String   @unique
   passwordHash   String
   role           String // ADMIN | PCOORD | TEACHER
-  facultyProfile Faculty?
+  facultyProfile Faculty? // This relation is now defined in the Faculty model
+
+  @@map("users") // Correct collection name
 }
 
 model Faculty {
-  id               Int               @id @default(autoincrement())
-  user             User              @relation(fields: [userId], references: [id])
-  userId           Int               @unique // one-to-one requires UNIQUE here
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String            @unique @db.ObjectId
   empId            String            @unique
   name             String
   phone            String
-  rfidUid          String            @unique // Assuming 12-char RFID UID (UID + Checksum)
-  devices          Device[] // 1-to-many: Faculty → Device
-  subjectInstances SubjectInstance[] // Faculty teaches many subject instances
-  classSessions    ClassSession[] // Faculty appears as teacher in sessions
+  rfidUid          String            @unique
+  devices          Device[]
+  subjectInstances SubjectInstance[]
+  classSessions    ClassSession[]
   scheduledClasses ScheduledClass[]
+
+  @@map("faculties") // Correct collection name
 }
 
 model Student {
-  id           Int             @id @default(autoincrement())
-  rfidUid      String          @unique // Assuming 12-char RFID UID (UID + Checksum)
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  rfidUid      String          @unique
   enrollmentNo String          @unique
   name         String
   phone        String?
   section      Section         @relation(fields: [sectionId], references: [id])
-  sectionId    Int
+  sectionId    String          @db.ObjectId
   logs         AttendanceLog[]
+
+  @@map("students") // Correct collection name
 }
 
 model Device {
-  id         Int       @id @default(autoincrement())
-  macAddr    String    @unique @db.VarChar(17) // Ensure this is 'macAddr' and has appropriate length
-  secret     String
-  name       String?
-  location   String?
-  lastBootAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt // FIX: Made nullable to allow migration on existing data
-
-  // NEW: Add optional relation back to Faculty for 'devices' field
-  faculty   Faculty? @relation(fields: [facultyId], references: [id])
-  facultyId Int? // Foreign key for the faculty who might own/be associated with this device
-
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  macAddr       String          @unique
+  secret        String
+  name          String?
+  location      String?
+  lastBootAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime?       @updatedAt
+  faculty       Faculty?        @relation(fields: [facultyId], references: [id])
+  facultyId     String?         @db.ObjectId
   classSessions ClassSession[]
-  logs          AttendanceLog[] // Device writes many attendance logs
+  logs          AttendanceLog[]
+
+  @@map("devices") // Correct collection name
 }
 
-// NEW CODE (add onDelete: Cascade to the teacher relation)
 model ClassSession {
-  id            Int             @id @default(autoincrement())
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
   subjectInst   SubjectInstance @relation(fields: [subjectInstId], references: [id])
-  subjectInstId Int
-  teacher       Faculty         @relation(fields: [teacherId], references: [id], onDelete: Cascade) // MODIFIED: Added onDelete: Cascade
-  teacherId     Int
+  subjectInstId String          @db.ObjectId
+  teacher       Faculty         @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId     String          @db.ObjectId
+  device        Device?         @relation(fields: [deviceId], references: [id])
+  deviceId      String?         @db.ObjectId
+  startAt       DateTime
+  endAt         DateTime?
+  isClosed      Boolean         @default(false)
+  logs          AttendanceLog[]
 
-  device   Device? @relation(fields: [deviceId], references: [id])
-  deviceId Int?
-
-  startAt  DateTime
-  endAt    DateTime?
-  isClosed Boolean         @default(false)
-  logs     AttendanceLog[]
+  @@map("classsessions") // Correct collection name
 }
 
 model AttendanceLog {
-  id               Int              @id @default(autoincrement())
-  student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade) // MODIFIED: Added onDelete: Cascade
-  studentId        Int
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId        String           @db.ObjectId
   session          ClassSession     @relation(fields: [sessionId], references: [id])
-  sessionId        Int
+  sessionId        String           @db.ObjectId
   status           AttendanceStatus
-  timestamp        DateTime         @default(now()) // Confirmed to be 'timestamp'
+  timestamp        DateTime         @default(now())
   device           Device           @relation(fields: [deviceId], references: [id])
-  deviceId         Int
-  deviceMacAddress String? // FIX: Made nullable as per comment and error
+  deviceId         String           @db.ObjectId
+  deviceMacAddress String?
   manualOverride   Boolean          @default(false)
 
   @@unique([studentId, sessionId])
+  @@map("attendancelogs") // Correct collection name
 }
 
 enum AttendanceStatus {
@@ -173,39 +187,35 @@ enum AttendanceStatus {
   ABSENT
 }
 
-// NEW CODE (add subjectInst and subjectInstId fields)
 model ScheduledClass {
-  id        Int       @id @default(autoincrement())
-  dayOfWeek DayOfWeek
-
-  startTime String // HH:MM:SS
-  endTime   String
-
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  subjectId Int
-  section   Section  @relation(fields: [sectionId], references: [id])
-  sectionId Int
-  faculty   Faculty? @relation(fields: [facultyId], references: [id])
-  facultyId Int?
-
-  // NEW RELATION TO SUBJECTINSTANCE
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  dayOfWeek     DayOfWeek
+  startTime     String // HH:MM:SS
+  endTime       String
+  subject       Subject         @relation(fields: [subjectId], references: [id])
+  subjectId     String          @db.ObjectId
+  section       Section         @relation(fields: [sectionId], references: [id])
+  sectionId     String          @db.ObjectId
+  faculty       Faculty?        @relation(fields: [facultyId], references: [id])
+  facultyId     String?         @db.ObjectId
   subjectInst   SubjectInstance @relation(fields: [subjectInstId], references: [id])
-  subjectInstId Int // This foreign key links to SubjectInstance
+  subjectInstId String          @db.ObjectId
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
-  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime       @updatedAt @db.Timestamptz(3)
-
-  @@unique([dayOfWeek, subjectId, sectionId, startTime, endTime]) // MODIFIED: Added startTime and endTime
-  @@index([subjectInstId]) // Keep this
+  @@unique([dayOfWeek, subjectId, sectionId, startTime, endTime])
+  @@index([subjectInstId])
+  @@map("scheduledclasses") // Correct collection name
 }
 
 model SemesterSubject {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   semester   Semester @relation(fields: [semesterId], references: [id])
-  semesterId Int
+  semesterId String   @db.ObjectId
   subject    Subject  @relation(fields: [subjectId], references: [id])
-  subjectId  Int
+  subjectId  String   @db.ObjectId
   createdAt  DateTime @default(now())
 
-  @@unique([semesterId, subjectId]) // A subject can be offered only once per semester
+  @@unique([semesterId, subjectId])
+  @@map("semestersubjects") // Correct collection name
 }

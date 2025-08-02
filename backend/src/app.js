@@ -39,7 +39,8 @@ app.use(cors({
     origin: [
         'http://localhost:3000',
         'http://localhost:8000',
-        'https://studentrfid.vercel.app'
+        'https://studentrfid.vercel.app',
+        'http://localhost:5173'
     ],
     credentials: true
 }));
@@ -113,9 +114,11 @@ app.locals.broadcastRfidToClient = (token, rfidUid) => {
 
 // --- Routes ---
 // Health Check (keep this as is)
+// Health Check
 app.get('/api/health', async (req, res) => {
     try {
-        await app.locals.prisma.$queryRaw`SELECT 1`;
+        // Use a MongoDB-compatible command to check the connection
+        await app.locals.prisma.$runCommandRaw({ ping: 1 });
         res.status(200).json({ status: 'Backend is healthy', database: 'Connected' });
     } catch (error) {
         console.error('Database Health Check Error:', error);

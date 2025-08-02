@@ -1,17 +1,14 @@
 import { PrismaClient } from '@prisma/client'
 
-const prisma = global.prisma || new PrismaClient({
+// FOR DEBUGGING: This line is intentionally simplified to always create a new client
+// and bypass any caching.
+const prisma = new PrismaClient({
   datasources: {
     db: {
       url: process.env.DATABASE_URL,
     },
   },
-  // Add these configurations for serverless environments
-  log: ['error'],
-  errorFormat: 'minimal',
+  log: ['query', 'info', 'warn', 'error'], // Added more logging to see what's happening
 })
-
-// Prevent multiple instances in development
-if (process.env.NODE_ENV === 'development') global.prisma = prisma
 
 export default prisma
