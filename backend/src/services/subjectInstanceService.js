@@ -22,8 +22,6 @@ async function createSubjectInstance(data) {
         throw createError(400, 'Invalid Subject ID, Section ID, or Faculty ID provided.');
     }
 
-    // Check for uniqueness: A specific subject in a specific section can only be taught by one faculty
-    // (This matches the @@unique([subjectId, sectionId, facultyId]) constraint in schema.prisma)
     const existingInstance = await prisma.subjectInstance.findUnique({
         where: {
             subjectId_sectionId_facultyId: {
@@ -62,7 +60,7 @@ async function createSubjectInstance(data) {
         return newInstance;
     } catch (error) {
         console.error('Error creating subject instance:', error);
-        if (error.code === 'P2003') { // Foreign key constraint violation
+        if (error.code === 'P2003') {
             throw createError(400, 'Invalid Subject ID, Section ID, or Faculty ID provided. Related entity not found.');
         }
         throw createError(500, 'Failed to create subject instance due to a database error.');
@@ -70,11 +68,12 @@ async function createSubjectInstance(data) {
 }
 
 /**
- * Retrieves all SubjectInstances with their associated subject, section, semester, course, and faculty details.
+ * Retrieves all SubjectInstances and sorts them in the application code to avoid database limitations.
  * @returns {Promise<Array<object>>} List of all SubjectInstance objects.
  */
 async function getAllSubjectInstances() {
-    return prisma.subjectInstance.findMany({
+    // 1. Fetch the data from the database without the complex sort
+    const instances = await prisma.subjectInstance.findMany({
         include: {
             subject: true,
             section: {
@@ -87,22 +86,39 @@ async function getAllSubjectInstances() {
                 }
             },
             faculty: { select: { id: true, name: true, empId: true } }
-        },
-        orderBy: [
-            { section: { semester: { course: { name: 'asc' } } } },
-            { section: { semester: { number: 'asc' } } },
-            { section: { name: 'asc' } },
-            { subject: { name: 'asc' } }
-        ]
+        }
     });
+
+    // 2. Perform the sort in JavaScript, which is more flexible
+    instances.sort((a, b) => {
+        const courseNameA = a.section?.semester?.course?.name || '';
+        const courseNameB = b.section?.semester?.course?.name || '';
+        if (courseNameA.localeCompare(courseNameB) !== 0) {
+            return courseNameA.localeCompare(courseNameB);
+        }
+
+        const semesterNumberA = a.section?.semester?.number || 0;
+        const semesterNumberB = b.section?.semester?.number || 0;
+        if (semesterNumberA - semesterNumberB !== 0) {
+            return semesterNumberA - semesterNumberB;
+        }
+
+        const sectionNameA = a.section?.name || '';
+        const sectionNameB = b.section?.name || '';
+        if (sectionNameA.localeCompare(sectionNameB) !== 0) {
+            return sectionNameA.localeCompare(sectionNameB);
+        }
+
+        const subjectNameA = a.subject?.name || '';
+        const subjectNameB = b.subject?.name || '';
+        return subjectNameA.localeCompare(subjectNameB);
+    });
+
+    return instances;
 }
 
 /**
  * Updates an existing SubjectInstance.
- * Note: Changing subjectId, sectionId, or facultyId would typically mean creating a new instance
- * and deleting the old one, due to the unique constraint. This update assumes modifying other potential fields
- * or re-assigning if the unique constraint is lifted or managed carefully.
- * For this implementation, we'll allow updating (re-assigning) all fields, letting Prisma handle the unique constraint error.
  * @param {number} instanceId - The ID of the SubjectInstance to update.
  * @param {object} data - { subjectId?, sectionId?, facultyId? }
  * @returns {Promise<object>} Updated SubjectInstance data.
@@ -128,13 +144,13 @@ async function updateSubjectInstance(instanceId, data) {
         return updatedInstance;
     } catch (error) {
         console.error('Error updating subject instance:', error);
-        if (error.code === 'P2025') { // Not found
+        if (error.code === 'P2025') {
             throw createError(404, 'Subject instance not found.');
         }
-        if (error.code === 'P2003') { // Foreign key constraint violation
+        if (error.code === 'P2003') {
             throw createError(400, 'Invalid Subject ID, Section ID, or Faculty ID provided for update. Related entity not found.');
         }
-        if (error.code === 'P2002') { // Unique constraint violation
+        if (error.code === 'P2002') {
             throw createError(409, 'Cannot update: this assignment (Subject, Section, Faculty) already exists.');
         }
         throw createError(500, 'Failed to update subject instance due to a database error.');
@@ -150,10 +166,10 @@ async function deleteSubjectInstance(instanceId) {
         await prisma.subjectInstance.delete({ where: { id: instanceId } });
     } catch (error) {
         console.error('Error deleting subject instance:', error);
-        if (error.code === 'P2025') { // Not found
+        if (error.code === 'P2025') {
             throw createError(404, 'Subject instance not found.');
         }
-        if (error.code === 'P2003') { // Foreign key constraint violation (e.g., scheduled classes linked)
+        if (error.code === 'P2003') {
             throw createError(409, 'Cannot delete subject instance: it is linked to existing scheduled classes. Please delete associated scheduled classes first.');
         }
         throw createError(500, 'Failed to delete subject instance due to a database error.');
